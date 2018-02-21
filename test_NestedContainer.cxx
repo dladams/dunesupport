@@ -4,11 +4,15 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <map>
 
 using std::string;
 using std::cout;
 using std::endl;
 using std::setw;
+using std::vector;
+using std::map;
 
 namespace {
 
@@ -58,10 +62,47 @@ namespace {
     return err;
   }
 
+  int test2() {
+    string myname = "test2: ";
+    Index err = 0;
+    cout << myname << "Construct container." << endl;
+    using Con = NestedContainer<map<string,vector<int>>>;
+    Con vals;
+    err += check(vals.size(), 0, "empty size");
+    vals.container()["a"] = {1};
+    err += check(vals.size(), 1, "size 1");
+    vals.container()["b"] = {11, 12};
+    err += check(vals.size(), 3, "size 2");
+    vals.container()["c"] = {21, 22, 23};
+    err += check(vals.size(), 6, "size 3");
+    cout << myname << "Check values" << endl;
+    vector<int> chkvals = {1, 11, 12, 21, 22, 23};
+    vector<string> chkkeys = {"a", "b", "b", "c", "c", "c"};
+    err += check(chkvals.size(), 6, "check");
+    err += check(chkkeys.size(), 6, "check");
+    Index ichk = 0;
+    cout << myname << "Begin/end iteration" << endl;
+    for ( Con::const_iterator ival=vals.begin(); ival!=vals.end(); ++ival ) {
+      check(ival.value(), chkvals[ichk], "check value");
+      check(ival.key1(), chkkeys[ichk], "check key");
+      ++ichk;
+    }
+    check(ichk, chkvals.size(), "check count");
+    cout << myname << "Range base iteration" << endl;
+    ichk = 0;
+    for ( int val : vals ) {
+      check(val, chkvals[ichk], "check value");
+      ++ichk;
+    }
+    check(ichk, chkvals.size(), "check count");
+    return err;
+  }
+
 }
 
 int test_NestedContainer() {
   Index err = 0;
   err += test1();
+  err += test2();
   return err;
 }
